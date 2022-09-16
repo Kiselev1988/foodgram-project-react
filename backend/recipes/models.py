@@ -12,7 +12,7 @@ class Ingredient(models.Model):
         help_text='Введите название ингредиента',
     )
     measurement_unit = models.CharField(
-        max_length=200,
+        max_length=20,
         verbose_name='Единица измерения',
         help_text='Введите единицу измерения',
     )
@@ -30,7 +30,7 @@ class Ingredient(models.Model):
 class Tag(models.Model):
 
     name = models.CharField(
-        max_length=200,
+        max_length=30,
         verbose_name='Название',
         help_text='Введите название тега',
     )
@@ -40,7 +40,7 @@ class Tag(models.Model):
         help_text='Введите цвет в формате hex'
     )
     slug = models.SlugField(
-        max_length=200,
+        max_length=30,
         unique=True,
         verbose_name='Текстовый идентификатор тега',
         help_text='Введите текстовый идентификатор тега'
@@ -131,13 +131,7 @@ class IngredientInRecipe(models.Model):
         verbose_name='Рецепт',
         help_text='Выберите рецепт'
     )
-    amount = models.PositiveSmallIntegerField(
-        default=1,
-        validators=[
-            MinValueValidator(
-                1, message='Количество ингредиентов не может быть меньше 1'
-            )
-        ],
+    amount = models.FloatField(
         verbose_name='Количество ингредиентов',
         help_text='Введите количество ингредиентов'
     )
@@ -157,7 +151,7 @@ class IngredientInRecipe(models.Model):
         return f'{self.ingredient} в {self.recipe}'
 
 
-class Favourite(models.Model):
+class Favorite(models.Model):
 
     user = models.ForeignKey(
         User,

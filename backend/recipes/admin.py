@@ -5,7 +5,7 @@ from .models import (
     Tag,
     Recipe,
     IngredientInRecipe,
-    Favourite,
+    Favorite,
     Cart
 )
 
@@ -50,12 +50,13 @@ class RecipeAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
     list_filter = ('name', 'author', 'tags')
 
+    @admin.display(description='Количество избранных рецептов')
     def favorite_count(self, obj):
         return obj.favorite.count()
 
 
-@admin.register(Favourite)
-class FavoritesAdmin(admin.ModelAdmin):
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('id', 'user')
     empty_value_display = '-пусто-'
 

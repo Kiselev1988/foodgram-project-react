@@ -1,11 +1,12 @@
-from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework.generics import get_object_or_404
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from recipes.models import (
     IngredientInRecipe,
-    Favourite,
+    Favorite,
     Ingredient,
     Recipe,
     Cart,
@@ -47,6 +48,8 @@ class UsersListSerializer(UserSerializer):
         user = self.context('request').user
         if user.is_anonymous:
             return False
+        if user.id == obj.author.id:
+            raise ValidationError('Нельзя подписаться на себя')
         return user.follower.filter(author=obj).exists()
 
 
@@ -121,7 +124,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = UsersListSerializer(
         read_only=True,
         many=False
-        )
+    )
     ingredients = ReadIngredientsRecipeSerializer(
         many=True,
         source='amount_ingredient'
@@ -155,7 +158,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return Favourite.objects.filter(
+        return Favorite.objects.filter(
             user=user,
             recipe=obj
         ).exists()
@@ -185,7 +188,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def validate_cooking_time(self, cooking_time):
         if cooking_time <= 0:
             raise serializers.ValidationError(
-                ''
+                'Время приготовления не может быть 0 или меньше'
             )
         return cooking_time
 
@@ -193,7 +196,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         validated_items = []
         existed = []
         for item in data:
-            ingredient = Ingredient.objects.get(pk=item['id']).name
+            ingredient = Ingredient.objects.get_object_or_404(
+                pk=item['id']
+            ).name
             if ingredient in validated_items:
                 existed.append(ingredient)
             validated_items.append(ingredient)

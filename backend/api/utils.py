@@ -6,12 +6,12 @@ from recipes.models import Recipe
 from .serializers import RecipeForFollowersSerializer
 
 
-def add_or_delete(request, model, obj_id):
+def add_or_delete(request, model, recipe_id):
     user = request.user
     if request.method == 'DELETE':
         obj = model.objects.filter(
             user=user,
-            recipe__id=obj_id
+            recipe__id=recipe_id
         )
         if obj.exists():
             obj.delete()
@@ -20,13 +20,13 @@ def add_or_delete(request, model, obj_id):
             status=status.HTTP_400_BAD_REQUEST)
     if model.objects.filter(
         user=user,
-        recipe__id=obj_id
+        recipe__id=recipe_id
     ).exists():
         return Response(
             status=status.HTTP_400_BAD_REQUEST)
     recipe = get_object_or_404(
         Recipe,
-        id=obj_id
+        id=recipe_id
     )
     model.objects.create(
         user=user,

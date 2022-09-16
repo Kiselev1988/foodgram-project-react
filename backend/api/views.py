@@ -1,12 +1,7 @@
-from http import HTTPStatus
-
-from django.db.models import Sum
-from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -20,16 +15,16 @@ from .serializers import (
     IngredientSerializer,
     RecipeSerializer,
     RecipeCreateSerializer,
-    RecipeForFollowersSerializer,
     FollowSerializer
 )
+from .services import get_ingredients_and_make_txt
+
 from recipes.models import (
     Ingredient,
     Recipe,
     Cart,
     Tag,
-    IngredientInRecipe,
-    Favourite
+    Favorite
 )
 from users.models import Follow, User
 from .utils import add_or_delete
@@ -78,26 +73,18 @@ class UsersViewSet(UserViewSet):
     def subscribe(self, request, id):
         author = get_object_or_404(User, id=id)
         if request.method == 'POST':
-            if request.user.id == author.id:
-                raise ValidationError('Нельзя подписаться на себя')
-            else:
-                serializer = FollowSerializer(
-                    Follow.objects.create(user=request.user, author=author),
-                    context={'request': request},
-                )
-                return Response(
-                    serializer.data, status=status.HTTP_201_CREATED
-                )
-        elif request.method == 'DELETE':
-            if Follow.objects.filter(
-                    user=request.user, author=author
-            ).exists():
-                Follow.objects.filter(
-                    user=request.user, author=author
-                ).delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+            serializer = FollowSerializer(
+                Follow.objects.create(user=request.user, author=author),
+                context={'request': request},
+            )
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED
+            )
+        if Follow.objects.filter(user=request.user, author=author).exists():
+            Follow.objects.filter(
+                user=request.user, author=author
+            ).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -115,37 +102,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def add_recipe(self, model, request, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        if model.objects.filter(
-                recipe=recipe,
-                user=request.user,
-        ).exists():
-            return Response(status=HTTPStatus.BAD_REQUEST)
-        model.objects.create(recipe=recipe, user=request.user)
-        serializer = RecipeForFollowersSerializer(recipe)
-        return Response(data=serializer.data, status=HTTPStatus.CREATED)
-
-    def delete_recipe(self, model, request, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        if model.objects.filter(
-                user=request.user,
-                recipe=recipe,
-        ).exists():
-            model.objects.filter(
-                user=request.user,
-                recipe=recipe,
-            ).delete()
-            return Response(status=HTTPStatus.NO_CONTENT)
-        return Response(status=HTTPStatus.BAD_REQUEST)
+    @action(
+        detail=True,
+        methods=['POST', 'DELETE'],
+        permission_classes=(IsAuthenticated,)
+    )
+    def add_or_delete_recipe(self, request, pk):
+        return add_or_delete(request, Recipe, pk)
 
     @action(
         detail=True,
         methods=['POST', 'DELETE'],
         permission_classes=(IsAuthenticated,)
     )
-    def favourite(self, request, pk=None):
-        return add_or_delete(request, Favourite, pk)
+    def favorite(self, request, pk=None):
+        return add_or_delete(request, Favorite, pk)
 
     @action(
         detail=True,
@@ -162,26 +133,4 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_cart(self, request):
         user = request.user
-        if not user.cart.exists():
-            return Response(status=HTTPStatus.BAD_REQUEST)
-        ingredients = IngredientInRecipe.objects.filter(
-            recipe__cart__user=user
-        ).values(
-            'ingredients__name',
-            'ingredients__measurement_unit',
-        ).annotate(
-            value=Sum('amount')
-        ).order_by('ingredients__name')
-        response = HttpResponse(
-            content_type='text/plain',
-            charset='utf-8',
-        )
-        response['Content-Disposition'] = 'attachment; filename="listbuy.txt"'
-        response.write('Список продуктов:\n')
-        for ingredient in ingredients:
-            response.write(
-                f'{ingredient["ingredients__name"]} '
-                f'{ingredient["value"]} '
-                f'{ingredient["ingredients__measurement_unit"]}'
-            )
-        return response
+        return get_ingredients_and_make_txt(user)

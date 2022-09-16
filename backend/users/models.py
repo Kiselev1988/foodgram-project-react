@@ -53,9 +53,10 @@ class Follow(models.Model):
         on_delete=models.CASCADE,
     )
 
-    def clean(self):
-        if self.user == self.author:
-            raise ValidationError('Нельзя подписаться на самого себя')
+    # def clean(self):
+    #     if self.user == self.author:
+    #         raise ValidationError('Нельзя подписаться на самого себя')
+    # перенести в сериализатор
 
     class Meta:
         ordering = ('author',)
