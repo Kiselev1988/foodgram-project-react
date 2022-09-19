@@ -1,5 +1,4 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -53,10 +52,6 @@ class Follow(models.Model):
         on_delete=models.CASCADE,
     )
 
-    # def clean(self):
-    #     if self.user == self.author:
-    #         raise ValidationError('Нельзя подписаться на самого себя')
-    # перенести в сериализатор
 
     class Meta:
         ordering = ('author',)

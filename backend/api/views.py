@@ -1,3 +1,6 @@
+from http import HTTPStatus
+
+from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework import filters, status, viewsets
@@ -17,14 +20,15 @@ from .serializers import (
     RecipeCreateSerializer,
     FollowSerializer
 )
-from .services import get_ingredients_and_make_txt
+from .services import make_cart_txt
 
 from recipes.models import (
     Ingredient,
     Recipe,
     Cart,
     Tag,
-    Favorite
+    Favorite,
+    IngredientInRecipe
 )
 from users.models import Follow, User
 from .utils import add_or_delete
@@ -80,11 +84,8 @@ class UsersViewSet(UserViewSet):
             return Response(
                 serializer.data, status=status.HTTP_201_CREATED
             )
-        if Follow.objects.filter(user=request.user, author=author).exists():
-            Follow.objects.filter(
-                user=request.user, author=author
-            ).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        Follow.objects.filter(user=request.user, author=author).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -133,4 +134,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_cart(self, request):
         user = request.user
-        return get_ingredients_and_make_txt(user)
+        if not user.cart.exists():
+            return Response(status=HTTPStatus.BAD_REQUEST)
+        ingredients = IngredientInRecipe.objects.filter(
+            recipe__cart__user=user
+        ).values(
+            'ingredients__name',
+            'ingredients__measurement_unit',
+        ).annotate(
+            value=Sum('amount')
+        ).order_by('ingredients__name')
+        return make_cart_txt(user, ingredients)

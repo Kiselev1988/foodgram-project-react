@@ -1,8 +1,9 @@
+from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
-from rest_framework.generics import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework.validators import UniqueTogetherValidator
 
 from recipes.models import (
     IngredientInRecipe,
@@ -196,9 +197,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         validated_items = []
         existed = []
         for item in data:
-            ingredient = Ingredient.objects.get_object_or_404(
-                pk=item['id']
-            ).name
+            ingredient = get_object_or_404(Ingredient, pk=item['id'])
             if ingredient in validated_items:
                 existed.append(ingredient)
             validated_items.append(ingredient)
@@ -287,6 +286,11 @@ class FollowSerializer(serializers.ModelSerializer):
             'id',
             'username'
         )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=User.objects.all(), fields=['username', 'id']
+            )
+        ]
 
     def get_recipes(self, obj):
         request = self.context.get('request')
