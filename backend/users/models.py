@@ -52,7 +52,6 @@ class Follow(models.Model):
         on_delete=models.CASCADE,
     )
 
-
     class Meta:
         ordering = ('author',)
         verbose_name = 'Подписчик'

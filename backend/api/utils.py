@@ -3,10 +3,9 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from recipes.models import Recipe
-from .serializers import RecipeForFollowersSerializer
 
 
-def add_or_delete(request, model, recipe_id):
+def add_or_delete(request, model, recipe_id, special_serializer):
     user = request.user
     if request.method == 'DELETE':
         obj = model.objects.filter(
@@ -32,7 +31,7 @@ def add_or_delete(request, model, recipe_id):
         user=user,
         recipe=recipe
     )
-    serializer = RecipeForFollowersSerializer(recipe)
+    serializer = special_serializer(recipe)
     return Response(
         serializer.data,
         status=status.HTTP_201_CREATED

@@ -18,7 +18,8 @@ from .serializers import (
     IngredientSerializer,
     RecipeSerializer,
     RecipeCreateSerializer,
-    FollowSerializer
+    FollowSerializer,
+    RecipeForFollowersSerializer
 )
 from .services import make_cart_txt
 
@@ -109,7 +110,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def add_or_delete_recipe(self, request, pk):
-        return add_or_delete(request, Recipe, pk)
+        return add_or_delete(request, Recipe, pk, RecipeForFollowersSerializer)
 
     @action(
         detail=True,
@@ -117,7 +118,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk=None):
-        return add_or_delete(request, Favorite, pk)
+        return add_or_delete(
+            request, Favorite, pk, RecipeForFollowersSerializer
+        )
 
     @action(
         detail=True,
@@ -125,7 +128,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def cart(self, request, pk):
-        return add_or_delete(request, Cart, pk)
+        return add_or_delete(request, Cart, pk, RecipeForFollowersSerializer)
 
     @action(
         detail=False,
