@@ -32,7 +32,6 @@ from recipes.models import (
     IngredientInRecipe
 )
 from users.models import Follow, User
-from .utils import add_or_delete
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -104,13 +103,29 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    @staticmethod
+    def _add_recipe(model, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
+        model.objects.create(recipe=recipe, user=request.user)
+        serializer = RecipeForFollowersSerializer(recipe)
+        return Response(data=serializer.data, status=HTTPStatus.CREATED)
+
+    @staticmethod
+    def _delete_recipe(model, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
+        model.objects.delete(recipe=recipe, user=request.user)
+        serializer = RecipeForFollowersSerializer(recipe)
+        return Response(data=serializer.data, status=HTTPStatus.NO_CONTENT)
+
     @action(
         detail=True,
         methods=['POST', 'DELETE'],
         permission_classes=(IsAuthenticated,)
     )
-    def add_or_delete_recipe(self, request, pk):
-        return add_or_delete(request, Recipe, pk, RecipeForFollowersSerializer)
+    def recipe(self, request, pk):
+        if request.method == 'POST':
+            return self._add_recipe(Recipe, request, pk)
+        self._delete_recipe(Recipe, request, pk)
 
     @action(
         detail=True,
@@ -118,9 +133,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk=None):
-        return add_or_delete(
-            request, Favorite, pk, RecipeForFollowersSerializer
-        )
+        if request.method == 'POST':
+            return self._add_recipe(Favorite, request, pk)
+        self._delete_recipe(Favorite, request, pk)
 
     @action(
         detail=True,
@@ -128,7 +143,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def cart(self, request, pk):
-        return add_or_delete(request, Cart, pk, RecipeForFollowersSerializer)
+        if request.method == 'POST':
+            return self._add_recipe(Cart, request, pk)
+        self._delete_recipe(Cart, request, pk)
 
     @action(
         detail=False,

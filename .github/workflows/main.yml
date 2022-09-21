@@ -75,8 +75,8 @@ jobs:
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
             sudo docker-compose up -d
             sudo docker-compose exec backend python manage.py migrate
-            sudo docker-compose exec backend python manage.py csv_manager
-            sudo docker-compose exec backend python manage.py tags_manager
+            sudo docker-compose exec backend python manage.py script_db
+            sudo docker-compose exec backend python manage.py script_tags
             sudo docker-compose exec backend python manage.py collectstatic --no-input
   send_message:
     runs-on: ubuntu-latest
@@ -87,4 +87,4 @@ jobs:
       with:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: ${{ github.workflow }} для репозитория ${{ github.repository }} выполнено
+        message: ${{ github.workflow }} для репозитория ${{ github.repository }} выполнено!
