@@ -22,7 +22,6 @@ from .serializers import (
     RecipeForFollowersSerializer
 )
 from .services import make_cart_txt
-
 from recipes.models import (
     Ingredient,
     Recipe,
