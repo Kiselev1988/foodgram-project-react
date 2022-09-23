@@ -94,13 +94,13 @@ class IngredientCreateSerializer(serializers.ModelSerializer):
 
 
 class ReadIngredientsRecipeSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='ingredients.id')
+    id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(
-        source='ingredients.name',
+        source='ingredient.name',
         read_only=True
     )
     measurement_unit = serializers.ReadOnlyField(
-        source='ingredients.measurement_unit',
+        source='ingredient.measurement_unit',
         read_only=True
     )
 
