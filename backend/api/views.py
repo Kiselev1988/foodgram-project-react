@@ -36,7 +36,7 @@ from users.models import Follow, User
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (IsAdminOrAuthor,)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -89,7 +89,7 @@ class UsersViewSet(UserViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrAuthor,)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
