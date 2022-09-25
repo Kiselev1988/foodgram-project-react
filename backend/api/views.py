@@ -138,11 +138,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=['GET', 'DELETE'],
+        methods=['POST', 'DELETE'],
         permission_classes=(IsAuthenticated,)
     )
     def cart(self, request, pk):
-        if request.method == 'GET':
+        if request.method == 'POST':
             return self._add_recipe(Cart, request, pk)
         self._delete_recipe(Cart, request, pk)
 
