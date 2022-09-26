@@ -153,10 +153,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
         user = request.user
-        if not user.cart.exists():
+        if not user.shopping_cart.exists():
             return Response(status=HTTPStatus.BAD_REQUEST)
         ingredients = IngredientInRecipe.objects.filter(
-            recipe__cart__user=user
+            recipe__shopping_cart__user=user
         ).values(
             'ingredients__name',
             'ingredients__measurement_unit',
