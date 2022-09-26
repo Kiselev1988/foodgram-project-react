@@ -141,7 +141,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         methods=['POST', 'DELETE'],
         permission_classes=(IsAuthenticated,)
     )
-    def cart(self, request, pk):
+    def shopping_cart(self, request, pk):
         if request.method == 'POST':
             return self._add_recipe(Cart, request, pk)
         self._delete_recipe(Cart, request, pk)
@@ -151,7 +151,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         methods=['GET'],
         permission_classes=(IsAuthenticated,)
     )
-    def download_cart(self, request):
+    def download_shopping_cart(self, request):
         user = request.user
         if not user.cart.exists():
             return Response(status=HTTPStatus.BAD_REQUEST)
