@@ -21,5 +21,4 @@ class Command(BaseCommand):
                 Ingredient.objects.get_or_create(
                     name=name,
                     measurement_unit=measurement_unit)
-            file.close()
         self.stdout.write(self.style.SUCCESS('Ингредиенты загружены'))
