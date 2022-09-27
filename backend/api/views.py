@@ -123,7 +123,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def recipe(self, request, pk):
         if request.method == 'POST':
             return self._add_recipe(Recipe, request, pk)
-        self._delete_recipe(Recipe, request, pk)
+        return self._delete_recipe(Recipe, request, pk)
 
     @action(
         detail=True,
@@ -133,7 +133,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk=None):
         if request.method == 'POST':
             return self._add_recipe(Favorite, request, pk)
-        self._delete_recipe(Favorite, request, pk)
+        return self._delete_recipe(Favorite, request, pk)
 
     @action(
         detail=True,
