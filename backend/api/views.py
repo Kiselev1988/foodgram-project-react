@@ -143,7 +143,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
             return self._add_recipe(Cart, request, pk)
-        self._delete_recipe(Cart, request, pk)
+        return self._delete_recipe(Cart, request, pk)
 
     @action(
         detail=False,
