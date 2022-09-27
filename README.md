@@ -32,11 +32,14 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 * Запуск сервера:
+
 ```
 cd backend
 python manage.py runserver
 ``` 
+
 * Запуск фронтенда:
+
 ```
 Из терминала выполнить команды:
 cd infra
