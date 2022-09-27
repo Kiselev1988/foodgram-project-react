@@ -22,6 +22,26 @@ source venv/Scripts/activate
 python -m pip install --upgrade pip
 pip install -r backend/requirements.txt
 ```
+## Для работы с локальныйм сервером:
+
+* Создание базы данных и администратора:
+```
+cd backend
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+```
+* Запуск сервера:
+```
+cd backend
+python manage.py runserver
+``` 
+* Запуск фронтенда:
+```
+Из терминала выполнить команды:
+cd infra
+docker-compose up --build
+```
 
 ## Для работы с удаленным сервером:
 * Выполните вход на свой удаленный сервер через терминал
