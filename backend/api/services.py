@@ -12,6 +12,6 @@ def make_cart_txt(user, ingredients):
         response.write(
             f'{ingredient["ingredients__name"]} '
             f'{ingredient["value"]} '
-            f'{ingredient["ingredients__measurement_unit"]}'
+            f'{ingredient["ingredients__measurement_unit"]}\n'
         )
     return response
